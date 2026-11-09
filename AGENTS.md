@@ -31,7 +31,7 @@ možností (⋯), sdílení a nastavení; obrazovka **Zpřístupnit seznam** pro
 | Google Tasks / Keep zamítnuty | Úkoly nejdou sdílet s dalšími lidmi, Keep nemá API pro běžné účty |
 | Synchronizace **dotazováním** (15 s, při návratu do aplikace, po připojení) | Sheets API nemá push notifikace pro klienta bez serveru; pro nákup stačí |
 | **Optimistické změny + fronta** v `localStorage` | v obchodě (sklep, slabý signál) musí odškrtávání fungovat hned i offline |
-| Stejný Google Cloud projekt a Client ID jako Lhůtník | stejný origin `n-yachts.github.io`; průvodce převezme `lhutnik.clientId` z `localStorage` |
+| Pro uživatele samostatná aplikace | v průvodci, nápovědě ani README se Lhůtník nezmiňuje (Nákupník používají i lidé bez Lhůtníku); Client ID se z Lhůtníku nepřebírá. Technicky může běžet ve stejném Google Cloud projektu. |
 | Předpona `nakupnik.` v `localStorage` | obě aplikace sdílí origin → oddělené klíče (u Lhůtníku jsme kvůli tomu přejmenovávali `jn.*`) |
 | Port 8081 lokálně | 8080 používá Lhůtník; port je součástí OAuth originu a referreru API klíče |
 
@@ -55,6 +55,12 @@ instance – všechny importy stejného modulu musí mít stejnou verzi, jinak b
 - Google Tabulka s názvem **`Nákupník – <název>`** (`TITLE_PREFIX`), Drive `appProperties: { nakupnik: '1' }`.
   Seznamy se hledají dotazem `appProperties has { key='nakupnik' and value='1' }` – s `drive.file` vrátí
   jen soubory, ke kterým má aplikace přístup (vlastní + vybrané v Pickeru).
+- Vlastní seznamy leží ve složce **Nákupník** (`appFolder()`): složka s `appProperties: { nakupnik: 'folder' }`,
+  hledá se podle značky (přejmenování/přesun nevadí), chybí-li (nebo je v koši), založí se nová.
+  Nové seznamy dostanou `parents: [složka]` a `appProperties.nakupnikFolder = '1'`. Seznamy bez této značky
+  (ze starších verzí, v kořeni Disku) `listLists()` jednou za běh na pozadí přesune (`addParents/removeParents`)
+  a označí – seznam, který si uživatel pak přesune jinam, už aplikace nevrací. Cizí seznamy se nepřesouvají.
+  Selže-li složka, seznam vznikne v kořeni (není to kritické).
 - List **`Položky`** (řádek 1 záhlaví): `id | položka | množství | jednotka | kategorie | koupeno | poznámka | přidal | změněno`
   (`ITEM_COLUMNS`). `koupeno` = `TRUE/FALSE`, `kategorie` = id z `CATEGORIES`, `přidal` = křestní jméno, `změněno` = ISO čas.
 - List **`Historie`**: `položka | kategorie | jednotka | počet | naposledy` – pro „Často kupujete“,
@@ -82,7 +88,7 @@ Pozor: 403 neznamená vždy „bez přístupu“ – nerozlišené 403 by omylem
 - **Přihlášení:** GIS token model, ~1 h, obnovení jen z kliknutí (`ensureAuth()` na začátku obsluhy).
   Vypršení během nákupu nevadí: změny jdou do fronty, u názvu se ukáže „🔑 Obnovit přihlášení“.
 - **Start bez tokenu:** pokud je v mezipaměti poslední seznam, otevře se rovnou (offline v obchodě).
-- **Nový seznam:** Drive `files.create` (mimeType spreadsheet + appProperties) → Sheets `batchUpdate`
+- **Nový seznam:** `appFolder()` → Drive `files.create` (mimeType spreadsheet + appProperties + parents) → Sheets `batchUpdate`
   (přejmenovat list na Položky, přidat Historie, zmrazit záhlaví) → zápis záhlaví.
 - **Přidání:** `parseItem` → existuje-li stejný název, jen se upraví/vrátí z košíku; jinak `add`
   s oddělením z Historie nebo `guessCategory`. Ve frontě: `values.append` + `bumpHistory`.
@@ -112,7 +118,7 @@ Jako Lhůtník: `manifest.webmanifest`, `sw.js` („nejdřív síť“, cizí do
 | Co | Jak |
 |---|---|
 | Rozpoznání položek | `node tests/parse.test.mjs` |
-| Celá aplikace | `python tests/e2e.py` – Playwright proti `tools/fakegoogle.py` (Drive, Sheets, Picker, GIS; hlídá i pravidlo `drive.file`): dva uživatelé, založení, přidávání, kategorie, sdílení, Picker, synchronizace, offline fronta, mazání koupených |
+| Celá aplikace | `python tests/e2e.py` – Playwright proti `tools/fakegoogle.py` (Drive, Sheets, Picker, GIS; hlídá i pravidlo `drive.file`): dva uživatelé, složka Nákupník a přesun starých seznamů, založení, přidávání, kategorie, sdílení, Picker, synchronizace, offline fronta, mazání koupených |
 | Náhledy | `python tools/screenshots.py` → `help/img/` (prohlédni je) |
 | Skutečný Google | automaticky nejde; změny API/přihlášení ověř ručně s uživatelem |
 | Lokálně | `start.cmd` (port 8081) nebo `python -m http.server 8081` |

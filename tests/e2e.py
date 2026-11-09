@@ -1,6 +1,6 @@
 """
 Smoke test celé aplikace proti napodobenému Googlu (tools/fakegoogle.py):
-dva uživatelé, založení seznamu, přidávání s množstvím, kategorie, odškrtnutí,
+dva uživatelé, složka Nákupník (i přesun starých seznamů), založení seznamu, přidávání s množstvím, kategorie, odškrtnutí,
 sdílení, zpřístupnění přes Picker, synchronizace, offline fronta, mazání koupených.
 
     pip install playwright && playwright install chromium
@@ -44,15 +44,23 @@ def main():
             pg.click('#btn-signin')
             return ctx, pg
 
+        # Seznam z dřívější verze (v kořeni Disku) – při načtení se přesune do složky Nákupník
+        g.files['old1'] = {'name': 'Nákupník – Starý', 'owner': 'a', 'appProperties': {'nakupnik': '1'}, 'trashed': False,
+                           'granted': {'a'}, 'sheets': {'Položky': [['id']], 'Historie': [['položka']]},
+                           'perms': [{'id': 'p0', 'email': 'jan@example.com', 'role': 'owner', 'user': 'a'}]}
         # --- Uživatel A založí seznam a přidá položky ---
         ctxA, a = page_for('a')
         a.wait_for_selector('#view-lists:not([hidden])')
-        a.wait_for_selector('#lists .empty')
+        a.wait_for_selector('#lists .list-card:has-text("Starý")')
         a.click('#btn-new-list'); a.fill('#form-list [name=name]', 'Potraviny'); a.click('#btn-list-save')
         a.wait_for_selector('#view-list:not([hidden])')
         for t in ['2 l mléko', 'rohlíky 10', 'banány', 'zubní pasta', '3x jogurt']:
             a.fill('#add-input', t); a.press('#add-input', 'Enter')
         a.wait_for_function("document.querySelector('#sync').textContent.includes('Uloženo')")
+        folders = [k for k, f in g.files.items() if f.get('mimeType') == 'application/vnd.google-apps.folder']
+        assert len(folders) == 1 and g.files[folders[0]]['name'] == 'Nákupník', folders
+        assert g.files['sheet1']['parents'] == folders, g.files['sheet1']['parents']
+        assert g.files['old1']['parents'] == folders and g.files['old1']['appProperties'].get('nakupnikFolder') == '1', g.files['old1']
         sheet = g.files['sheet1']['sheets']['Položky']
         assert len(sheet) == 6, sheet
         cats = [h.text_content() for h in a.query_selector_all('.cat')]
@@ -125,6 +133,12 @@ def main():
         # --- Nové otevření aplikace: přehled seznamů se načte hned ---
         ctxC, c = page_for('a')
         c.wait_for_selector('.list-card:has-text("Potraviny")')
+        # Druhý seznam jde do stejné složky (nová složka nevznikne); cizí sdílený seznam se nepřesouvá
+        c.click('#btn-new-list'); c.fill('#form-list [name=name]', 'Drogerie'); c.click('#btn-list-save')
+        c.wait_for_selector('#view-list:not([hidden])')
+        folders = [k for k, f in g.files.items() if f.get('mimeType') == 'application/vnd.google-apps.folder']
+        assert len(folders) == 1, folders
+        assert g.files['sheet2']['parents'] == folders, g.files['sheet2']
         b.close()
     srv.shutdown()
     if errors:

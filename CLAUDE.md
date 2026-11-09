@@ -15,7 +15,7 @@ Nasazuje se přes GitHub Pages z větve `main`: https://n-yachts.github.io/nakup
    Snímky si prohlédni.
 4. **README.md** drž v souladu s nápovědou.
 5. **Verze:** `python tools/stamp.py` (`?v=…` u CSS, modulů, obrázků nápovědy a `VERSION` v `sw.js`).
-6. Texty pro uživatele česky. Struktura tabulky (listy `Položky`/`Historie`, sloupce, `appProperties`,
+6. Texty pro uživatele česky a **bez zmínek o Lhůtníku** (aplikaci používají i lidé bez něj). Struktura tabulky (listy `Položky`/`Historie`, sloupce, `appProperties`,
    prefix názvu „Nákupník – “) se nesmí měnit bez migrace – existující seznamy by se ztratily.
 7. Klíče v `localStorage` mají předponu `nakupnik.` (Lhůtník na stejné doméně používá `lhutnik.`).
 

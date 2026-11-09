@@ -58,7 +58,8 @@ class FakeGoogle:
         owner = USERS[f['owner']]
         return {'id': fid, 'name': f['name'], 'ownedByMe': f['owner'] == u, 'shared': len(f['perms']) > 1,
                 'modifiedTime': '2026-11-09T09:00:00Z', 'owners': [owner], 'appProperties': f['appProperties'],
-                'trashed': f['trashed']}
+                'trashed': f['trashed'], 'mimeType': f.get('mimeType', 'application/vnd.google-apps.spreadsheet'),
+                'parents': f.get('parents', ['root-' + f['owner']])}
 
     @staticmethod
     def parse_range(r):
@@ -113,12 +114,19 @@ class FakeGoogle:
             return ok({'user': USERS[me]})
 
         if path == '/drive/v3/files' and req.method == 'GET':
-            fs = [self.file_json(i, me) for i, f in self.files.items() if self.visible(f, me)]
+            want = 'folder' if "value='folder'" in q.get('q', '') else '1'
+            fs = [self.file_json(i, me) for i, f in self.files.items()
+                  if self.visible(f, me) and f['appProperties'].get('nakupnik') == want]
             return ok({'files': sorted(fs, key=lambda x: x['name'])})
         if path == '/drive/v3/files' and req.method == 'POST':
-            self.n += 1
-            fid = f'sheet{self.n}'
+            folder = body.get('mimeType') == 'application/vnd.google-apps.folder'
+            if folder:
+                fid = f'folder{sum(k.startswith("folder") for k in self.files) + 1}'
+            else:
+                self.n += 1
+                fid = f'sheet{self.n}'
             self.files[fid] = {'name': body['name'], 'owner': me, 'appProperties': body.get('appProperties', {}),
+                               'mimeType': body.get('mimeType'), 'parents': body.get('parents', ['root-' + me]),
                                'trashed': False, 'granted': {me}, 'sheets': {'List 1': []},
                                'perms': [{'id': 'p0', 'email': USERS[me]['emailAddress'], 'role': 'owner', 'user': me}]}
             return ok(self.file_json(fid, me))
@@ -142,6 +150,12 @@ class FakeGoogle:
                     return route.fulfill(status=204)
             if req.method == 'PATCH':
                 if 'name' in body: f['name'] = body['name']
+                if 'appProperties' in body: f['appProperties'] = {**f['appProperties'], **body['appProperties']}
+                if 'addParents' in q:
+                    if f['owner'] != me:
+                        return err(403, 'Only the owner can move')
+                    rm = q.get('removeParents', '').split(',')
+                    f['parents'] = [x for x in f.get('parents', ['root-' + f['owner']]) if x not in rm] + [q['addParents']]
                 if body.get('trashed'): f['trashed'] = True
                 return ok(self.file_json(fid, me))
             return ok(self.file_json(fid, me))

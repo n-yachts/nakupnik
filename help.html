@@ -6,7 +6,7 @@
   <title>Nápověda – Nákupník</title>
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <meta name="theme-color" content="#2f7d4f">
-  <link rel="stylesheet" href="styles.css?v=20261109-1925">
+  <link rel="stylesheet" href="styles.css?v=20261109-1940">
   <style>
     .help { display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 5rem; }
     .toc { position: sticky; top: 1rem; align-self: start; max-height: calc(100vh - 2rem); overflow: auto; font-size: .9rem; }
@@ -93,12 +93,12 @@
         <h1>Nápověda</h1>
         <p class="lead">Nákupník je sdílený nákupní seznam. Seznamů můžete mít víc (potraviny, drogerie, loď…)
           a každý můžete sdílet s rodinou nebo posádkou. Kdo je u obchodu, odškrtává; ostatní to za chvíli uvidí.</p>
-        <p>Seznamy se ukládají do <b>Google Tabulek</b> ve vašem Disku – žádný cizí server, nic se neplatí.
+        <p>Seznamy se ukládají do <b>Google Tabulek</b> ve složce Nákupník ve vašem Disku – žádný cizí server, nic se neplatí.
           Každý, s kým sdílíte, se přihlásí <b>svým</b> Google účtem.</p>
         <p>Aplikace běží na <a href="https://n-yachts.github.io/nakupnik/">n-yachts.github.io/nakupnik</a>
           a dá se <a href="#instalace">nainstalovat do telefonu</a>.</p>
-        <figure class="phone half"><img src="help/img/seznam.png?v=20261109-1925" alt="Nákupní seznam v telefonu" loading="lazy">
-          <figcaption>Seznam seřazený podle oddělení v obchodě.</figcaption></figure><figure class="phone half"><img src="help/img/seznamy.png?v=20261109-1925" alt="Přehled seznamů" loading="lazy">
+        <figure class="phone half"><img src="help/img/seznam.png?v=20261109-1940" alt="Nákupní seznam v telefonu" loading="lazy">
+          <figcaption>Seznam seřazený podle oddělení v obchodě.</figcaption></figure><figure class="phone half"><img src="help/img/seznamy.png?v=20261109-1940" alt="Přehled seznamů" loading="lazy">
           <figcaption>Přehled seznamů s počtem položek ke koupi.</figcaption></figure>
       </section>
 
@@ -106,14 +106,13 @@
         <h2>První spuštění</h2>
         <p>Při prvním otevření vás provede <b>průvodce</b>. V Google Cloud je potřeba jednou povolit přístup
           k Tabulkám a Disku. Je to zdarma.</p>
-        <div class="tip"><b>Používáte Lhůtník?</b> Nákupník běží na stejné adrese <code>n-yachts.github.io</code>,
-          takže použijete <b>stejný projekt v Google Cloud i stejné Client ID</b> (průvodce ho doplní sám).
-          Stačí povolit tři API a vytvořit API klíč – kroky 2 a 5.</div>
-        <figure><img src="help/img/pruvodce-uvod.png?v=20261109-1925" alt="Úvod průvodce" loading="lazy">
-          <figcaption>Úvod průvodce. Když máte Lhůtník, upozorní vás na zkrácený postup.</figcaption></figure>
+        <div class="tip"><b>Máte už projekt v Google Cloud</b> (třeba pro jinou aplikaci)? Můžete použít ten –
+          zkontrolujte souhlasovou obrazovku a Client ID a doplňte, co chybí: hlavně tři API (krok 2) a API klíč (krok 5).</div>
+        <figure><img src="help/img/pruvodce-uvod.png?v=20261109-1940" alt="Úvod průvodce" loading="lazy">
+          <figcaption>Úvod průvodce. Kdo už má Client ID i API klíč, může kroky přeskočit.</figcaption></figure>
 
         <h3 id="krok-projekt">1. Projekt v Google Cloud</h3>
-        <p>Máte-li projekt z Lhůtníku, v <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">konzoli</a>
+        <p>Máte-li už projekt, v <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">konzoli</a>
           ho nahoře vyberte. Jinak založte nový přes
           <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">vytvoření projektu</a>
           (název třeba <code>Nakupnik</code>).</p>
@@ -125,10 +124,10 @@
           <li><a href="https://console.cloud.google.com/apis/library/sheets.googleapis.com" target="_blank" rel="noopener">Google Sheets API</a> – položky v tabulce,</li>
           <li><a href="https://console.cloud.google.com/apis/library/picker.googleapis.com" target="_blank" rel="noopener">Google Picker API</a> – okno Google Disku pro otevření sdíleného seznamu.</li>
         </ul>
-        <figure><img src="help/img/pruvodce-api.png?v=20261109-1925" alt="Krok průvodce: povolení API" loading="lazy"></figure>
+        <figure><img src="help/img/pruvodce-api.png?v=20261109-1940" alt="Krok průvodce: povolení API" loading="lazy"></figure>
 
         <h3 id="krok-souhlas">3. Souhlasová obrazovka</h3>
-        <p>S projektem z Lhůtníku je hotová. U nového projektu: v
+        <p>Pokud ji projekt už má, krok přeskočte. Jinak v
           <a href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a>
           → <b>Začít</b>, název <code>Nákupník</code>, váš e-mail, cílová skupina <b>Externí</b>; pak v
           <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noopener">Audience</a>
@@ -143,7 +142,7 @@
         <p>V <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener">Clients</a>
           otevřete klienta typu <b>Webová aplikace</b> (nebo ho vytvořte). V <b>Authorized JavaScript origins</b> mějte
           <code>https://n-yachts.github.io</code> a pro spouštění na počítači <code>http://localhost:8081</code>.
-          Client ID vložte do průvodce – s Lhůtníkem je už předvyplněné.</p>
+          Client ID zkopírujte a vložte do průvodce.</p>
 
         <h3 id="krok-klic">5. API klíč</h3>
         <p>Okno Google Disku (Picker), přes které otevřete seznam, který vám někdo nasdílel, potřebuje API klíč:</p>
@@ -156,7 +155,7 @@
           <li>Zkopírujte klíč (začíná <code>AIza</code>) a vložte ho do průvodce.</li>
         </ol>
         <p>Díky omezení klíč nikdo jiný nevyužije. Ukládá se jen ve vašem prohlížeči.</p>
-        <figure><img src="help/img/pruvodce-klic.png?v=20261109-1925" alt="Krok průvodce: API klíč" loading="lazy"></figure>
+        <figure><img src="help/img/pruvodce-klic.png?v=20261109-1940" alt="Krok průvodce: API klíč" loading="lazy"></figure>
 
         <h3 id="prihlaseni">6. Přihlášení</h3>
         <ol class="steps-list">
@@ -177,8 +176,8 @@
           <li><b>Zpět na přehled:</b> šipka ← vlevo nahoře nebo logo Nákupník.</li>
           <li><b>Další možnosti</b> (tlačítko ⋯): přejmenovat, otevřít v Google Tabulkách, smazat koupené, smazat seznam.</li>
         </ul>
-        <figure class="phone half"><img src="help/img/novy-seznam.png?v=20261109-1925" alt="Nový seznam" loading="lazy">
-          <figcaption>Založení seznamu.</figcaption></figure><figure class="phone half"><img src="help/img/menu.png?v=20261109-1925" alt="Možnosti seznamu" loading="lazy">
+        <figure class="phone half"><img src="help/img/novy-seznam.png?v=20261109-1940" alt="Nový seznam" loading="lazy">
+          <figcaption>Založení seznamu.</figcaption></figure><figure class="phone half"><img src="help/img/menu.png?v=20261109-1940" alt="Možnosti seznamu" loading="lazy">
           <figcaption>Další možnosti (⋯).</figcaption></figure>
         <div class="tip"><b>Smazat, nebo odebrat?</b> Váš vlastní seznam se smaže (přesune do koše Google Disku –
           zmizí i ostatním). U seznamu, který vám někdo nasdílel, je místo toho <i>Odebrat z mých seznamů</i> –
@@ -223,8 +222,8 @@
           <li><b>Po nákupu:</b> <i>Smazat koupené ze seznamu</i> vyčistí košík. Položky zůstanou v „Často kupujete“.</li>
           <li>U sdíleného seznamu je vpravo vidět, <b>kdo položku přidal</b>.</li>
         </ul>
-        <figure class="phone half"><img src="help/img/seznam-nakup.png?v=20261109-1925" alt="Seznam při nákupu" loading="lazy">
-          <figcaption>Při nákupu: koupené položky jsou dole v košíku.</figcaption></figure><figure class="phone half"><img src="help/img/uprava-polozky.png?v=20261109-1925" alt="Úprava položky" loading="lazy">
+        <figure class="phone half"><img src="help/img/seznam-nakup.png?v=20261109-1940" alt="Seznam při nákupu" loading="lazy">
+          <figcaption>Při nákupu: koupené položky jsou dole v košíku.</figcaption></figure><figure class="phone half"><img src="help/img/uprava-polozky.png?v=20261109-1940" alt="Úprava položky" loading="lazy">
           <figcaption>Úprava položky.</figcaption></figure>
       </section>
 
@@ -238,7 +237,7 @@
         </ol>
         <p>V okně sdílení vidíte, <b>kdo má přístup</b>, a jako vlastník ho můžete <b>odebrat</b>. Je tam i odkaz
           na seznam, který můžete poslat třeba přes WhatsApp – funguje ale jen lidem, se kterými je seznam sdílený.</p>
-        <figure class="phone"><img src="help/img/sdileni.png?v=20261109-1925" alt="Sdílení seznamu" loading="lazy"></figure>
+        <figure class="phone"><img src="help/img/sdileni.png?v=20261109-1940" alt="Sdílení seznamu" loading="lazy"></figure>
 
         <h3 id="sdileni-otevrit">Otevřít seznam, který vám někdo nasdílel</h3>
         <p>Nákupník má přístup jen k tabulkám, které mu výslovně ukážete. Proto je potřeba sdílený seznam
@@ -248,7 +247,7 @@
           <li>Klepněte na <b>Zpřístupnit seznam</b>. Otevře se okno Google Disku se seznamem.</li>
           <li>Vyberte ho a klepněte na <b>Vybrat</b>. Hotovo – seznam už máte mezi svými natrvalo.</li>
         </ol>
-        <figure class="phone"><img src="help/img/zpristupneni.png?v=20261109-1925" alt="Zpřístupnění sdíleného seznamu" loading="lazy"></figure>
+        <figure class="phone"><img src="help/img/zpristupneni.png?v=20261109-1940" alt="Zpřístupnění sdíleného seznamu" loading="lazy"></figure>
         <div class="tip"><b>Seznam v okně nevidíte?</b> Zkontrolujte, že jste v Nákupníku přihlášeni stejným účtem,
           na jehož e-mail byl seznam sdílen.</div>
       </section>
@@ -269,13 +268,16 @@
           <li>Seznam se ukládá i do telefonu, takže <b>ve sklepě supermarketu bez signálu</b> ho pořád vidíte a můžete odškrtávat.</li>
           <li>Když dva lidé změní stejnou položku současně, platí poslední změna.</li>
         </ul>
-        <figure class="phone"><img src="help/img/offline.png?v=20261109-1925" alt="Seznam bez signálu" loading="lazy">
+        <figure class="phone"><img src="help/img/offline.png?v=20261109-1940" alt="Seznam bez signálu" loading="lazy">
           <figcaption>Bez signálu: změna čeká na odeslání.</figcaption></figure>
       </section>
 
       <section id="tabulky">
         <h2>V Google Tabulkách</h2>
-        <p>Každý seznam je Google Tabulka <i>„Nákupník – název“</i> ve vašem Disku (menu ⋯ → <i>Otevřít v Google Tabulkách</i>).
+        <p>Každý seznam je Google Tabulka <i>„Nákupník – název“</i> ve složce <b>Nákupník</b> ve vašem Disku
+          (menu ⋯ → <i>Otevřít v Google Tabulkách</i>). Složku aplikace založí sama při prvním seznamu a seznamy
+          ze starších verzí do ní jednou přesune. Složku můžete přejmenovat nebo přesunout – aplikace ji pozná i tak.
+          Seznam, který vám někdo nasdílel, zůstává v Disku jeho vlastníka; najdete ho v části <i>Sdíleno se mnou</i>.
           List <b>Položky</b> má sloupce: id, položka, množství, jednotka, kategorie, koupeno, poznámka, přidal, změněno.
           List <b>Historie</b> slouží pro „Často kupujete“.</p>
         <div class="warn"><b>Tabulku raději neupravujte ručně.</b> Nepřejmenovávejte listy ani nemažte sloupec
@@ -290,7 +292,7 @@
           <li><b>Počítač:</b> ikona instalace v adresním řádku Chromu nebo Edge.</li>
         </ul>
         <p>Aplikace se přizpůsobí i tmavému režimu.</p>
-        <figure><img src="help/img/pocitac-tmavy.png?v=20261109-1925" alt="Nákupník na počítači v tmavém režimu" loading="lazy"></figure>
+        <figure><img src="help/img/pocitac-tmavy.png?v=20261109-1940" alt="Nákupník na počítači v tmavém režimu" loading="lazy"></figure>
       </section>
 
       <section id="potize">

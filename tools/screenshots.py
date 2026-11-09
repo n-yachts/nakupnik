@@ -60,7 +60,7 @@ def main():
         # --- Průvodce (počítač) ---
         ctx, pg = new(w=1000, h=820)
         pg.goto(base)
-        pg.evaluate(f"localStorage.setItem('lhutnik.clientId', '{CLIENT}')")   # jako by byl nastavený Lhůtník
+        pg.evaluate(f"localStorage.setItem('nakupnik.clientId', '{CLIENT}')")
         pg.reload()
         shot(pg, 'pruvodce-uvod')
         for _ in range(2): pg.click('#setup-next')

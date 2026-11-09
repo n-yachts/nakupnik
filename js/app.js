@@ -1,7 +1,7 @@
-import { initAuth, signIn, signOut, getStoredToken, SCOPES } from './auth.js?v=20261109-1925';
-import * as G from './google.js?v=20261109-1925';
-import { ListStore, newId, nowIso, forgetList } from './store.js?v=20261109-1925';
-import { parseItem, formatQty, guessCategory, CATEGORIES, CATEGORY_BY_ID } from './parse.js?v=20261109-1925';
+import { initAuth, signIn, signOut, getStoredToken, SCOPES } from './auth.js?v=20261109-1940';
+import * as G from './google.js?v=20261109-1940';
+import { ListStore, newId, nowIso, forgetList } from './store.js?v=20261109-1940';
+import { parseItem, formatQty, guessCategory, CATEGORIES, CATEGORY_BY_ID } from './parse.js?v=20261109-1940';
 
 // ---------- Úložiště v prohlížeči ----------
 const LS = {
@@ -15,8 +15,6 @@ const store = {
   json: (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
   setJson: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-// Lhůtník běží na stejné doméně – jeho Client ID se dá použít znovu.
-const LHUTNIK_CLIENT = store.get('lhutnik.clientId');
 
 const PUBLIC_URL = 'https://n-yachts.github.io/nakupnik/';
 const CONSOLE = 'https://console.cloud.google.com';
@@ -73,18 +71,16 @@ const SETUP = [
         <li>🥬 <b>Řazení podle oddělení</b> v obchodě a <b>často kupované</b> jedním klepnutím</li>
         <li>📶 Funguje i <b>bez signálu</b> – změny se odešlou po připojení</li>
       </ul>
-      <p>Seznamy se ukládají do <b>Google Tabulek</b> ve vašem Disku. Aplikace vidí jen tabulky,
+      <p>Seznamy se ukládají do <b>Google Tabulek</b> ve složce Nákupník ve vašem Disku. Aplikace vidí jen tabulky,
          které sama založila nebo které jí ukážete.</p>
-      ${LHUTNIK_CLIENT ? `<div class="callout"><b>Máte nastavený Lhůtník.</b> Použijte stejný projekt v Google Cloud –
-         stačí povolit tři API a vytvořit API klíč. Client ID se doplní samo.</div>` : ''}
       <p><button type="button" class="ghost small" data-goto="4">Už mám Client ID i API klíč, přeskočit →</button></p>`,
   },
   {
     title: 'Projekt',
     html: () => `
       <h2>1. Projekt v Google Cloud</h2>
-      <p><b>Máte projekt z Lhůtníku?</b> Použijte ho – v konzoli ho nahoře vyberte a pokračujte dalším krokem.</p>
-      <p>Jinak založte nový:</p>
+      <p>Máte už projekt v Google Cloud (třeba pro jinou aplikaci)? Můžete ho použít – v konzoli ho nahoře
+         vyberte a pokračujte dalším krokem. Jinak založte nový:</p>
       <ol>
         <li>Otevřete <a href="${CONSOLE}/projectcreate" target="_blank" rel="noopener">vytvoření projektu</a>.</li>
         <li>Název třeba <code>Nakupnik</code> → <b>Vytvořit</b> a projekt nahoře vyberte.</li>
@@ -105,33 +101,32 @@ const SETUP = [
     title: 'Souhlas',
     html: () => `
       <h2>3. Souhlasová obrazovka</h2>
-      <p><b>Projekt z Lhůtníku:</b> tento krok už máte hotový. Volitelně v
-         <a href="${CONSOLE}/auth/scopes" target="_blank" rel="noopener">Data access</a> přidejte oprávnění
-         <code>${SCOPES[0]}</code>.</p>
-      <p><b>Nový projekt:</b></p>
+      <p>Pokud ji projekt už má, tento krok přeskočte.</p>
       <ol>
         <li>Otevřete <a href="${CONSOLE}/auth/overview" target="_blank" rel="noopener">Google Auth Platform</a> → <b>Začít</b>.</li>
         <li>Název aplikace <code>Nákupník</code>, e-mail podpory, cílová skupina <b>Externí</b>, dokončete.</li>
         <li>V <a href="${CONSOLE}/auth/audience" target="_blank" rel="noopener">Audience</a> klikněte na <b>Publikovat aplikaci</b>.</li>
       </ol>
       <div class="callout">Bez publikování Google po 7 dnech zruší přihlášení. Lidé, se kterými budete sdílet,
-        se pak přihlásí svým účtem a potvrdí varování „Google tuto aplikaci neověřil“.</div>`,
+        se pak přihlásí svým účtem a potvrdí varování „Google tuto aplikaci neověřil“.</div>
+      <p class="muted">Volitelně v <a href="${CONSOLE}/auth/scopes" target="_blank" rel="noopener">Data access</a>
+         přidejte oprávnění <code>${SCOPES[0]}</code>.</p>`,
   },
   {
     title: 'Client ID',
     html: () => `
       <h2>4. Client ID</h2>
-      <p>${LHUTNIK_CLIENT ? 'Doplnil jsem Client ID z Lhůtníku. ' : ''}V
+      <p>V
          <a href="${CONSOLE}/auth/clients" target="_blank" rel="noopener">Clients</a> otevřete svého klienta
          (nebo vytvořte nový typu <b>Webová aplikace</b>) a do <b>Authorized JavaScript origins</b> mějte:</p>
       <ul>
-        <li><code>https://n-yachts.github.io</code> (už tam je, pokud používáte Lhůtník)</li>
+        <li><code>https://n-yachts.github.io</code></li>
         <li><code>http://localhost:8081</code> – jen pro spouštění na počítači přes <code>start.cmd</code></li>
       </ul>
       <p class="copyline">Tato stránka běží na <code id="origin-val">${esc(location.origin)}</code>
         <button type="button" class="ghost small" data-copy="#origin-val">Kopírovat</button></p>
       <input id="client-input" class="mono" placeholder="123456789-abc….apps.googleusercontent.com"
-             value="${esc(store.get(LS.client) || LHUTNIK_CLIENT || '')}" spellcheck="false" autocomplete="off">
+             value="${esc(store.get(LS.client) || '')}" spellcheck="false" autocomplete="off">
       <p id="client-err" class="error" hidden></p>`,
     validate: () => {
       const v = $('#client-input').value.trim();

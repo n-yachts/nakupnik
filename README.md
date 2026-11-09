@@ -1,7 +1,7 @@
 # Nákupník
 
 Sdílené nákupní seznamy pro rodinu i posádku. Seznamy se ukládají do **Google Tabulek**
-ve vašem Disku; každý, s kým seznam sdílíte, se přihlásí svým Google účtem.
+ve složce *Nákupník* ve vašem Disku; každý, s kým seznam sdílíte, se přihlásí svým Google účtem.
 
 **Web:** https://n-yachts.github.io/nakupnik/ · 📖 **Nápověda s obrázky:**
 [help.html](https://n-yachts.github.io/nakupnik/help.html)
@@ -24,9 +24,8 @@ ve vašem Disku; každý, s kým seznam sdílíte, se přihlásí svým Google �
 - **Web:** https://n-yachts.github.io/nakupnik/
 - **Lokálně (Windows):** dvojklik na `start.cmd` → `http://localhost:8081`
 
-Při prvním spuštění provede **průvodce** nastavením Google Cloud. Pokud používáte
-[Lhůtník](https://n-yachts.github.io/lhutnik/), použijte stejný projekt a Client ID (doplní se samo);
-stačí povolit **Google Drive API, Google Sheets API a Google Picker API** a vytvořit **API klíč**
+Při prvním spuštění provede **průvodce** nastavením Google Cloud: projekt, souhlasová obrazovka,
+Client ID (webová aplikace), povolit **Google Drive API, Google Sheets API a Google Picker API** a vytvořit **API klíč**
 omezený na `https://n-yachts.github.io/*`, `http://localhost:8081/*` a Google Picker API.
 
 ## Oprávnění
@@ -43,7 +42,7 @@ js/app.js                 rozhraní: průvodce, seznamy, položky, sdílení, na
 js/store.js               stav seznamu, fronta neodeslaných změn, synchronizace
 js/google.js              Drive API, Sheets API, Google Picker
 js/parse.js               rozpoznání množství a oddělení z textu
-js/auth.js                přihlášení přes Google (stejné jako v Lhůtníku)
+js/auth.js                přihlášení přes Google
 manifest.webmanifest, sw.js, icons/   instalace jako aplikace (PWA)
 server.ps1, start.cmd     lokální server na portu 8081
 tools/                    fakegoogle.py (napodobený Google), screenshots.py, stamp.py, icons.py

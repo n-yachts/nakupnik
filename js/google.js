@@ -1,7 +1,7 @@
 // Volání Google Drive API v3, Sheets API v4 a Google Pickeru.
 // Oprávnění je jen drive.file: aplikace vidí jen tabulky, které sama založila,
 // nebo které jí uživatel ukázal v okně Google Disku (Picker).
-import { getStoredToken, clearToken } from './auth.js?v=20261109-1925';
+import { getStoredToken, clearToken } from './auth.js?v=20261109-1940';
 
 const DRIVE = 'https://www.googleapis.com/drive/v3';
 const SHEETS = 'https://sheets.googleapis.com/v4/spreadsheets';
@@ -67,15 +67,56 @@ const q = name => `'${name.replace(/'/g, "''")}'`;   // název listu v A1 zápis
 
 // ---------- Seznamy (soubory) ----------
 
+const FOLDER_NAME = 'Nákupník';
+const FOLDER_MIME = 'application/vnd.google-apps.folder';
+let folderId = null;   // složka „Nákupník“ v Můj disk (hledá se jednou za běh aplikace)
+
+/** Najde (případně založí) složku Nákupník. Hledá se podle značky, takže přejmenování nevadí. */
+export async function appFolder() {
+  if (folderId) return folderId;
+  const res = await call(`${DRIVE}/files`, {
+    query: {
+      q: `appProperties has { key='${APP_PROP}' and value='folder' } and mimeType='${FOLDER_MIME}' and trashed=false`,
+      fields: 'files(id)', pageSize: 10,
+    },
+  });
+  folderId = res.files?.[0]?.id || (await call(`${DRIVE}/files`, {
+    method: 'POST', query: { fields: 'id' },
+    body: { name: FOLDER_NAME, mimeType: FOLDER_MIME, appProperties: { [APP_PROP]: 'folder' } },
+  })).id;
+  return folderId;
+}
+
 export async function listLists() {
   const res = await call(`${DRIVE}/files`, {
     query: {
       q: `appProperties has { key='${APP_PROP}' and value='1' } and trashed=false`,
-      fields: 'files(id,name,ownedByMe,shared,modifiedTime,owners(displayName,emailAddress))',
+      fields: 'files(id,name,ownedByMe,shared,modifiedTime,owners(displayName,emailAddress),parents,appProperties)',
       orderBy: 'name', pageSize: 200,
     },
   });
-  return (res.files || []).map(fileToList);
+  const files = res.files || [];
+  moveOldLists(files).catch(e => console.warn('Přesun do složky Nákupník:', e));
+  return files.map(fileToList);
+}
+
+let moveTried = false;
+/** Vlastní seznamy z dřívějších verzí (založené v kořeni Disku) jednou přesune do složky Nákupník.
+ *  Přesunuté se označí (appProperties.nakupnikFolder), takže seznam, který si uživatel
+ *  později sám přesune jinam, už aplikace nechá být. Cizí (sdílené) seznamy přesouvat nelze. */
+async function moveOldLists(files) {
+  const todo = files.filter(f => f.ownedByMe !== false && !f.appProperties?.nakupnikFolder);
+  if (moveTried || !todo.length) return;
+  moveTried = true;
+  const folder = await appFolder();
+  for (const f of todo) {
+    const from = (f.parents || []).filter(p => p !== folder).join(',');
+    await call(`${DRIVE}/files/${encodeURIComponent(f.id)}`, {
+      method: 'PATCH',
+      query: { addParents: folder, ...(from ? { removeParents: from } : {}), fields: 'id' },
+      body: { appProperties: { nakupnikFolder: '1' } },
+    });
+  }
 }
 
 export async function getList(id) {
@@ -98,10 +139,19 @@ function fileToList(f) {
 
 /** Založí novou tabulku se dvěma listy a záhlavím. */
 export async function createList(name) {
+  let folder = null;
+  try { folder = await appFolder(); } catch (e) {
+    if (e instanceof AuthError || e.offline || e.setup) throw e;
+    console.warn('Složka Nákupník:', e);   // když se nepovede, seznam vznikne v kořeni Disku
+  }
   const file = await call(`${DRIVE}/files`, {
     method: 'POST',
     query: { fields: 'id,name,ownedByMe,shared,modifiedTime,owners(displayName,emailAddress)' },
-    body: { name: TITLE_PREFIX + name, mimeType: 'application/vnd.google-apps.spreadsheet', appProperties: { [APP_PROP]: '1' } },
+    body: {
+      name: TITLE_PREFIX + name, mimeType: 'application/vnd.google-apps.spreadsheet',
+      appProperties: { [APP_PROP]: '1', nakupnikFolder: '1' },
+      ...(folder ? { parents: [folder] } : {}),
+    },
   });
   const meta = await call(`${SHEETS}/${file.id}`, { query: { fields: 'sheets.properties(sheetId,title)' } });
   const firstId = meta.sheets[0].properties.sheetId;
