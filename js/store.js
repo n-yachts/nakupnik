@@ -1,7 +1,7 @@
 // Stav jednoho seznamu: data z tabulky + fronta změn, které ještě nedošly do Googlu.
 // Změny se ukazují hned (optimisticky) a odesílají se postupně; bez signálu čekají
 // v localStorage a odešlou se po připojení. Při souběžné úpravě vyhrává poslední zápis.
-import * as G from './google.js?v=20261109-1930';
+import * as G from './google.js?v=20261109-1925';
 
 const KEY = { cache: id => `nakupnik.cache.${id}`, pending: id => `nakupnik.pending.${id}` };
 const load = (k, def) => { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } };

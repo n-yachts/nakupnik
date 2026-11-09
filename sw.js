@@ -1,7 +1,7 @@
 // Service worker Nákupníku: umožní instalaci aplikace a její spuštění i při slabém signálu.
 // Strategie „nejdřív síť“: vždy se zkusí nová verze z webu, mezipaměť je jen záloha,
 // takže aktualizace se projeví hned. Volání Googlu (přihlášení, Disk, Tabulky) se nikdy neukládají.
-const VERSION = '20261109-1930';
+const VERSION = '20261109-1925';
 const CACHE = `nakupnik-${VERSION}`;
 const SHELL = [
   './',

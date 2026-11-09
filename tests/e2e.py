@@ -105,6 +105,15 @@ def main():
         bpg.wait_for_function("document.querySelector('#sync').textContent.includes('Uloženo')")
         assert any(r[1] == 'Máslo' for r in sheet[1:])
 
+        # --- Nepovolené API: česká hláška, seznam se NESMÍ odebrat ---
+        g.disabled = True
+        a.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
+        a.wait_for_function("document.querySelector('#sync').textContent.includes('není povolené')")
+        assert a.is_visible('#view-list') and a.locator('.it-name').count() > 0
+        g.disabled = False
+        a.evaluate("document.dispatchEvent(new Event('visibilitychange'))")
+        a.wait_for_function("document.querySelector('#sync').textContent.includes('Uloženo')")
+
         # --- Smazat koupené, historie ---
         a.click('#btn-clear')
         a.wait_for_function("document.querySelector('#sync').textContent.includes('Uloženo')")

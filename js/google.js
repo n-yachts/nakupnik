@@ -1,7 +1,7 @@
 // Volání Google Drive API v3, Sheets API v4 a Google Pickeru.
 // Oprávnění je jen drive.file: aplikace vidí jen tabulky, které sama založila,
 // nebo které jí uživatel ukázal v okně Google Disku (Picker).
-import { getStoredToken, clearToken } from './auth.js?v=20261109-1930';
+import { getStoredToken, clearToken } from './auth.js?v=20261109-1925';
 
 const DRIVE = 'https://www.googleapis.com/drive/v3';
 const SHEETS = 'https://sheets.googleapis.com/v4/spreadsheets';
@@ -37,6 +37,24 @@ async function call(url, { method = 'GET', body, query } = {}) {
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const msg = data?.error?.message || res.statusText;
+    const reasons = [
+      ...(data?.error?.errors || []).map(e => e.reason),
+      ...(data?.error?.details || []).map(d => d.reason),
+    ].filter(Boolean);
+    // API není v Google Cloud povolené – nastavení, ne chybějící přístup k seznamu.
+    if (reasons.includes('SERVICE_DISABLED') || reasons.includes('accessNotConfigured') || /has not been used in project|is disabled/i.test(msg)) {
+      const api = /sheets/i.test(msg) ? 'Google Sheets API' : /picker/i.test(msg) ? 'Google Picker API' : 'Google Drive API';
+      const project = (msg.match(/project (\d+)/) || [])[1];
+      const err = new Error(`V Google Cloud není povolené ${api}${project ? ` (projekt ${project})` : ''}. Povolte ho a za pár minut to zkuste znovu – viz Nápověda, krok 2.`);
+      err.status = res.status; err.setup = true;
+      throw err;
+    }
+    // Překročené limity – zkusit později, nic se nemaže.
+    if (res.status === 429 || reasons.some(r => /rateLimit|quota/i.test(r))) {
+      const err = new Error('Google teď hlásí příliš mnoho požadavků. Zkuste to za chvíli.');
+      err.status = res.status; err.offline = true;   // chovat se jako výpadek: změny počkají
+      throw err;
+    }
     if (res.status === 404 || res.status === 403) throw new NoAccessError(msg);
     const err = new Error(`Google: ${msg}`);
     err.status = res.status;

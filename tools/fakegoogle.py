@@ -43,6 +43,7 @@ class FakeGoogle:
         self.files = {}   # id -> {name, owner, appProperties, trashed, perms:[{id,email,role}], granted:set, sheets:{title:[rows]}}
         self.n = 0
         self.offline = set()   # uživatelé „bez signálu“ – jejich požadavky selžou jako bez sítě
+        self.disabled = False  # True = „Google Drive API has not been used in project … or it is disabled“
 
     # ----- pomocné -----
     def user(self, req):
@@ -92,6 +93,12 @@ class FakeGoogle:
 
         if me in self.offline:
             return route.abort('internetdisconnected')
+        if self.disabled:
+            return route.fulfill(status=403, content_type='application/json', body=json.dumps({'error': {
+                'code': 403, 'status': 'PERMISSION_DENIED',
+                'message': 'Google Drive API has not been used in project 123456789012 before or it is disabled.',
+                'errors': [{'reason': 'accessNotConfigured'}],
+                'details': [{'reason': 'SERVICE_DISABLED'}]}}))
         body = json.loads(req.post_data) if req.post_data else {}
         if not me:
             return err(401, 'no auth')

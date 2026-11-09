@@ -1,7 +1,7 @@
-import { initAuth, signIn, signOut, getStoredToken, SCOPES } from './auth.js?v=20261109-1930';
-import * as G from './google.js?v=20261109-1930';
-import { ListStore, newId, nowIso, forgetList } from './store.js?v=20261109-1930';
-import { parseItem, formatQty, guessCategory, CATEGORIES, CATEGORY_BY_ID } from './parse.js?v=20261109-1930';
+import { initAuth, signIn, signOut, getStoredToken, SCOPES } from './auth.js?v=20261109-1925';
+import * as G from './google.js?v=20261109-1925';
+import { ListStore, newId, nowIso, forgetList } from './store.js?v=20261109-1925';
+import { parseItem, formatQty, guessCategory, CATEGORIES, CATEGORY_BY_ID } from './parse.js?v=20261109-1925';
 
 // ---------- Úložiště v prohlížeči ----------
 const LS = {

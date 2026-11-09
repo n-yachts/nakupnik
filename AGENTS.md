@@ -66,6 +66,12 @@ instance – všechny importy stejného modulu musí mít stejnou verzi, jinak b
 Řádek položky se hledá čtením sloupce A těsně před zápisem (`updateItem`, `deleteItems`), protože
 ostatní mezitím mohli přidat/smazat řádky. Mazání jde odspodu. Souběžná změna: vyhrává poslední zápis.
 
+### Chyby API (`call()` v `google.js`)
+- nepovolené API (`SERVICE_DISABLED`/`accessNotConfigured`) → česká hláška s názvem API a číslem projektu, nic se nemaže,
+- 429 / rateLimit / quota → chová se jako výpadek sítě (změny čekají ve frontě),
+- ostatní 403/404 → `NoAccessError` (seznam smazaný nebo přestal být sdílený → odebere se z přehledu).
+Pozor: 403 neznamená vždy „bez přístupu“ – nerozlišené 403 by omylem odebíralo seznamy.
+
 ### V prohlížeči (`localStorage`)
 `nakupnik.clientId`, `nakupnik.apiKey`, `nakupnik.lastList`, `nakupnik.lists` (přehled),
 `nakupnik.hidden` (odebrané cizí seznamy), `nakupnik.me`, `nakupnik.cache.<id>` (položky + historie),
