@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Nákupník</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2f7d4f">
+  <meta name="description" content="Sdílené nákupní seznamy v Google Tabulkách – pro rodinu i posádku.">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Nákupník">
+  <link rel="stylesheet" href="styles.css?v=20261109-1930">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" id="brand"><img class="logo" src="icons/icon-192.png" alt="" width="26" height="26"> Nákupník</a>
+    <nav class="top-actions">
+      <button id="btn-install-top" class="ghost" hidden title="Nainstalovat jako aplikaci">📲<span class="lbl"> Nainstalovat</span></button>
+      <button id="btn-settings" class="ghost" title="Nastavení">⚙︎<span class="lbl"> Nastavení</span></button>
+      <a id="btn-help" class="btn ghost" href="help.html" target="_blank" rel="noopener" title="Nápověda">❓<span class="lbl">Nápověda</span></a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="view-file" class="card narrow" hidden>
+      <h1>Otevřete aplikaci přes web nebo start.cmd</h1>
+      <p>Google přihlášení nefunguje u stránky otevřené přímo ze souboru. Použijte
+         <a href="https://n-yachts.github.io/nakupnik/">n-yachts.github.io/nakupnik</a>,
+         nebo spusťte <code>start.cmd</code> ve složce projektu (otevře se <code>http://localhost:8081</code>).</p>
+    </section>
+
+    <!-- Průvodce prvním spuštěním -->
+    <section id="view-setup" class="card narrow" hidden>
+      <div class="steps" id="setup-steps"></div>
+      <div id="setup-body"></div>
+      <div class="wizard-nav">
+        <button id="setup-back" class="ghost">← Zpět</button>
+        <button id="setup-next" class="primary">Pokračovat →</button>
+      </div>
+    </section>
+
+    <!-- Přihlášení -->
+    <section id="view-signin" class="card narrow center" hidden>
+      <h1>Přihlášení</h1>
+      <p class="muted">Nákupník ukládá seznamy do Google Tabulek ve vašem Disku. Vidí jen tabulky,
+        které sám založil nebo které mu ukážete – ostatní soubory ne.</p>
+      <button id="btn-signin" class="primary big">Přihlásit se přes Google</button>
+      <p class="hint">Pokud uvidíte „Google tuto aplikaci neověřil“, klikněte na <b>Pokračovat</b>
+         (případně <b>Rozšířené</b> → <b>Přejít na …</b>). Je to vaše vlastní aplikace.</p>
+      <p class="hint"><a href="help.html#prihlaseni" target="_blank" rel="noopener">📖 Nápověda k přihlášení</a></p>
+    </section>
+
+    <!-- Přehled seznamů -->
+    <section id="view-lists" hidden>
+      <div class="lists-head">
+        <h1>Moje seznamy</h1>
+        <div class="row-actions">
+          <button id="btn-open-shared" class="ghost">📥 Otevřít sdílený</button>
+          <button id="btn-new-list" class="primary">+ Nový seznam</button>
+        </div>
+      </div>
+      <div id="lists" class="lists"></div>
+    </section>
+
+    <!-- Zpřístupnění seznamu z odkazu -->
+    <section id="view-grant" class="card narrow center" hidden>
+      <h1>📥 Sdílený seznam</h1>
+      <p>Někdo s vámi sdílí nákupní seznam. Aby ho Nákupník mohl otevřít, potvrďte ho jednou
+         v okně Google Disku: seznam vyberte a klikněte na <b>Vybrat</b>.</p>
+      <button id="btn-grant" class="primary big">Zpřístupnit seznam</button>
+      <p><button id="btn-grant-cancel" class="ghost">Zpět na moje seznamy</button></p>
+      <p class="hint">Seznam nevidíte? Zkontrolujte, že jste přihlášeni stejným účtem, se kterým byl seznam sdílen.</p>
+    </section>
+
+    <!-- Jeden seznam -->
+    <section id="view-list" hidden>
+      <div class="list-head">
+        <button id="btn-back" class="ghost icon-btn" title="Zpět na seznamy">←</button>
+        <div class="list-title">
+          <h1 id="list-name"></h1>
+          <div id="sync" class="sync"></div>
+        </div>
+        <button id="btn-share" class="ghost">👥<span class="lbl"> Sdílet</span></button>
+        <button id="btn-list-menu" class="ghost icon-btn" title="Další možnosti">⋯</button>
+      </div>
+
+      <form id="add-form" class="add-bar" autocomplete="off">
+        <input id="add-input" list="history-list" placeholder="Přidat… např. 2 l mléko" aria-label="Nová položka" enterkeyhint="done">
+        <datalist id="history-list"></datalist>
+        <button class="primary" type="submit">Přidat</button>
+      </form>
+      <div id="frequent" class="frequent"></div>
+
+      <div id="items" class="items"></div>
+      <div id="bought" class="bought"></div>
+    </section>
+
+    <div id="loading" class="loading" hidden><div class="spinner"></div></div>
+  </main>
+
+  <!-- Úprava položky -->
+  <dialog id="dlg-item">
+    <form id="form-item" method="dialog" class="dlg-pad">
+      <h2>Upravit položku</h2>
+      <label>Položka <input name="name" required maxlength="80"></label>
+      <div class="row">
+        <label>Množství <input name="qty" inputmode="decimal" maxlength="8" placeholder="např. 2"></label>
+        <label>Jednotka
+          <select name="unit"><option value="">—</option><option>ks</option><option>kg</option><option>dkg</option><option>g</option><option>l</option><option>ml</option><option value="bal">balení</option></select>
+        </label>
+      </div>
+      <label>Oddělení <select name="cat" id="cat-select"></select></label>
+      <label>Poznámka <input name="note" maxlength="120" placeholder="např. značka, bez laktózy…"></label>
+      <p id="item-meta" class="hint"></p>
+      <div class="dlg-actions">
+        <button type="button" id="btn-item-delete" class="danger">Smazat</button>
+        <span class="spacer"></span>
+        <button type="button" class="ghost" data-close>Zrušit</button>
+        <button type="submit" class="primary">Uložit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Nový / přejmenovat seznam -->
+  <dialog id="dlg-list">
+    <form id="form-list" method="dialog" class="dlg-pad">
+      <h2 id="list-dlg-title">Nový seznam</h2>
+      <label>Název <input name="name" required maxlength="40" placeholder="např. Potraviny, Drogerie, Loď"></label>
+      <div class="chips" id="list-suggest"></div>
+      <div class="dlg-actions">
+        <span class="spacer"></span>
+        <button type="button" class="ghost" data-close>Zrušit</button>
+        <button type="submit" class="primary" id="btn-list-save">Vytvořit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Další možnosti seznamu -->
+  <dialog id="dlg-menu">
+    <div class="dlg-pad">
+      <h2 id="menu-title">Seznam</h2>
+      <div class="menu">
+        <button id="m-rename" class="ghost">✏️ Přejmenovat</button>
+        <button id="m-sheet" class="ghost">📊 Otevřít v Google Tabulkách</button>
+        <button id="m-clear" class="ghost">🧺 Smazat koupené položky</button>
+        <button id="m-delete" class="danger">🗑️ Smazat seznam</button>
+      </div>
+      <div class="dlg-actions"><span class="spacer"></span><button class="primary" data-close>Zavřít</button></div>
+    </div>
+  </dialog>
+
+  <!-- Sdílení -->
+  <dialog id="dlg-share">
+    <form id="form-share" method="dialog" class="dlg-pad">
+      <h2>Sdílet seznam</h2>
+      <p class="hint">Zadejte e-mail Google účtu. Dotyčnému přijde e-mail s odkazem; seznam si otevře ve svém Nákupníku a může ho upravovat.</p>
+      <div class="row share-row">
+        <label>E-mail <input name="email" type="email" required placeholder="jmeno@gmail.com" autocomplete="email"></label>
+        <button type="submit" class="primary">Sdílet</button>
+      </div>
+      <h3 class="sub">Kdo má přístup</h3>
+      <ul id="people" class="people"></ul>
+      <h3 class="sub">Odkaz na seznam</h3>
+      <div class="copyline"><code id="share-link"></code><button type="button" class="ghost small" id="btn-copy-link">Kopírovat</button></div>
+      <p class="hint">Odkaz funguje jen lidem, se kterými je seznam sdílený.</p>
+      <div class="dlg-actions"><span class="spacer"></span><button type="button" class="primary" data-close>Hotovo</button></div>
+    </form>
+  </dialog>
+
+  <!-- Nastavení -->
+  <dialog id="dlg-settings">
+    <div class="dlg-pad">
+      <h2>Nastavení</h2>
+      <dl class="kv">
+        <dt>Účet</dt><dd id="set-user"></dd>
+        <dt>Client ID</dt><dd id="set-client" class="mono"></dd>
+        <dt>API klíč</dt><dd id="set-key" class="mono"></dd>
+        <dt>Adresa aplikace</dt><dd id="set-origin" class="mono"></dd>
+        <dt>Verze</dt><dd id="set-ver" class="mono"></dd>
+      </dl>
+      <h3 class="sub">Aplikace v telefonu a počítači</h3>
+      <p id="install-info" class="hint"></p>
+      <div class="dlg-actions wrap"><button id="btn-install" class="primary" hidden>📲 Nainstalovat aplikaci</button></div>
+      <h3 class="sub">Účet</h3>
+      <div class="dlg-actions wrap">
+        <button id="btn-signout" class="ghost">Odhlásit</button>
+        <button id="btn-reset" class="danger">Znovu spustit průvodce</button>
+        <span class="spacer"></span>
+        <button class="primary" data-close>Zavřít</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" popover="manual"></div>
+
+  <script type="module" src="js/app.js?v=20261109-1930"></script>
+</body>
+</html>
