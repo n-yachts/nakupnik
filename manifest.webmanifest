@@ -3,7 +3,7 @@
   "short_name": "Nákupník",
   "description": "Sdílené nákupní seznamy v Google Tabulkách – pro rodinu i posádku.",
   "lang": "cs",
-  "id": "./",
+  "id": "/nakupnik/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

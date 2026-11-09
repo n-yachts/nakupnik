@@ -110,6 +110,9 @@ Pozor: 403 neznamená vždy „bez přístupu“ – nerozlišené 403 by omylem
 
 ## 6. PWA, mezipaměť, verze
 
+> **`id` v `manifest.webmanifest` musí být `/nakupnik/`** (absolutní cesta). Relativní `"./"` se počítá od kořene
+> domény → Lhůtník i Nákupník na `n-yachts.github.io` by měly stejnou identitu a instalace jedné by přepsala druhou.
+
 Jako Lhůtník: `manifest.webmanifest`, `sw.js` („nejdřív síť“, cizí domény se neukládají, mezipaměť
 `nakupnik-<VERSION>`), ikony z `tools/icons.py`. Před nasazením `python tools/stamp.py`.
 
